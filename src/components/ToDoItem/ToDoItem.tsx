@@ -1,12 +1,19 @@
 import React from 'react'
-import { ToDo } from '../../types/types'
+import { TodoProps } from '../../types/types'
+import EditTodo from '../EditTodo/EditTodo'
 
-const ToDoItem: React.FC<ToDo> = ({ text, createdAt, updatedAt, number }) => {
+const ToDoItem: React.FC<TodoProps> = ({
+	todo,
+	handleSaveEditedTodo,
+	editingId,
+}) => {
 	return (
-		<ul>
-			<ol>
-				{number} {text}
-			</ol>
+		<ul className='relative'>
+			{editingId ? (
+				<EditTodo handleSaveEditedTodo={handleSaveEditedTodo} />
+			) : (
+				<ol>{todo.text}</ol>
+			)}
 		</ul>
 	)
 }

@@ -5,6 +5,14 @@ export interface ToDo {
 	completed: boolean
 	createdAt: string
 	updatedAt: string
+	priority?: string
+}
+
+export interface TodoProps extends ToDo {
+	handleSaveEditedTodo?: (editedTodo: string) => void
+	todoId?: number
+	editingId?: number | null
+	todo: ToDo
 }
 
 export interface BtnAddProps {
@@ -30,9 +38,11 @@ export interface BtnDoneProps {
 	todoId: number
 }
 
-export type Priority = 'highest' | 'lowest'
+export type Priority = 'highest' | 'lowest' | 'middle'
 
-export interface prioritizeTodoProps {
+export interface MenuTodoProps {
 	prioritizeTodo: (todoId: number, value: Priority) => void
 	todoId: number
+	editTodo: (todoId: number) => void
+	handleSaveEditedTodo: (e: React.MouseEvent<HTMLButtonElement>) => void
 }

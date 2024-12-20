@@ -11,10 +11,13 @@ import BtnDel from './components/BtnDel/BtnDel'
 import BtnDone from './components/BtnDone/BtnDone'
 import DoneTodos from './components/DoneTodos/DoneTodos'
 import MenuTodo from './components/MenuTodo/MenuTodo'
+import useDebounce from './hooks/UseDebounce'
 
 function App() {
+	// ========================================= STATES
+
 	const [inputValue, setInputValue] = useState<string>('')
-	const [todos, setToDos] = useState<ToDo[]>(() => {
+	const [todos, setTodos] = useState<ToDo[]>(() => {
 		const savedTodos = localStorage.getItem('todos')
 		return savedTodos ? JSON.parse(savedTodos) : []
 	})
@@ -22,9 +25,15 @@ function App() {
 		const savedDoneTodos = localStorage.getItem('doneTodos')
 		return savedDoneTodos ? JSON.parse(savedDoneTodos) : []
 	})
-	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null)
 
-	const addToDo = () => {
+	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null)
+	const [editingId, setEditingId] = useState<number | null>(null) // по идее эти два стейта можно обьеденить в один
+
+	// const debouncedSaveEditedTodo = useDebounce(, 500)
+
+	// ========================================= FUNCTIONS
+
+	const handleAddToDo = () => {
 		if (inputValue.trim() !== '') {
 			const nextId =
 				todos.length > 0 ? Math.max(...todos.map(todo => todo.id)) + 1 : 1
@@ -35,21 +44,32 @@ function App() {
 				completed: false,
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
+				priority: 'middle',
 			}
-			setToDos(prev => [...prev, newToDo])
+			setTodos(prev => {
+				const highPrioritized = prev.filter(todo => todo.priority === 'highest')
+				const lowPrioritized = prev.filter(todo => todo.priority === 'lowest')
+				const midPrioritized = prev.filter(todo => todo.priority === 'middle')
+				return [
+					...highPrioritized,
+					...midPrioritized,
+					newToDo,
+					...lowPrioritized,
+				]
+			})
 			setInputValue('')
 		}
 	}
 
 	const handleEnterPress = (e: React.KeyboardEvent) => {
 		if (e.key === 'Enter') {
-			addToDo()
+			handleAddToDo()
 		}
 	}
 
 	const deleteToDo = (e: React.MouseEvent<HTMLButtonElement>, id: number) => {
 		e.preventDefault()
-		setToDos(todos.filter(todo => todo.id !== id))
+		setTodos(todos.filter(todo => todo.id !== id))
 	}
 
 	const todoDone = (e: React.MouseEvent<HTMLButtonElement>, id: number) => {
@@ -58,7 +78,7 @@ function App() {
 
 		if (doneTodo && !doneTodos.some(todo => todo.id === id)) {
 			setDoneTodos(prev => [...prev, doneTodo])
-			setToDos(todos.filter(todo => todo.id !== id))
+			setTodos(todos.filter(todo => todo.id !== id))
 		}
 	}
 
@@ -67,20 +87,48 @@ function App() {
 	}
 
 	const prioritizeTodo = (todoId: number, value: Priority) => {
-		setToDos(prev => {
-			const targetTodo = prev.filter(todo => todo.id === todoId)
+		setTodos(prev => {
+			const targetTodo = prev.find(todo => todo.id === todoId)
+			if (!targetTodo) return prev
+
+			const prioritizedTodo = { ...targetTodo, priority: value }
+
 			const filteredTodos = prev.filter(todo => todo.id !== todoId)
-			return [targetTodo, ...filteredTodos]
+			if (value === 'highest') {
+				return [prioritizedTodo, ...filteredTodos]
+			} else if (value === 'lowest') {
+				return [...filteredTodos, prioritizedTodo]
+			} else {
+				return prev
+			}
 		})
+		return value
 	}
+
+	const editTodo = (id: number) => {
+		setEditingId(id) // here is the id of clicked to edit todo from MenuTodo
+	}
+
+	const handleSaveEditedTodo = () => {
+		if (editingId) {
+		}
+	}
+
+	// ============================================= EFFECTS
 
 	useEffect(() => {
 		localStorage.setItem('todos', JSON.stringify(todos))
-	}, [todos])
-
-	useEffect(() => {
 		localStorage.setItem('doneTodos', JSON.stringify(doneTodos))
-	}, [doneTodos])
+		setOpenedMenuId(null)
+		setEditingId(null)
+	}, [todos, doneTodos])
+
+	// ============================================ LOGS
+
+	console.log(todos)
+	console.log(editingId)
+	console.log(openedMenuId);
+	
 
 	return (
 		<div className='m-10 flex flex-col justify-center items-center'>
@@ -94,7 +142,7 @@ function App() {
 				<Btn
 					className='border bg-slate-100 hover:bg-slate-200 transition-all duration-200 border-gray-300 rounded-md p-1'
 					text={'add new todo'}
-					addToDo={addToDo}
+					addToDo={handleAddToDo}
 				/>
 			</div>
 			<div className='w-1/2'>
@@ -103,9 +151,17 @@ function App() {
 						return (
 							<div
 								key={toDo.id}
-								className='flex gap-3 w-full justify-between border border-r-0 border-gray-300 bg-slate-100 hover:bg-slate-200 transition-all duration-300 rounded-full my-3 pl-1 items-center'
+								className={`flex gap-3 w-full justify-between border border-r-0 border-gray-300 bg-slate-100 hover:bg-slate-200 transition-all duration-300 rounded-full my-3 pl-1 items-center 
+								${toDo.priority === 'highest' ? 'bg-yellow-50 hover:bg-yellow-100' : 'bg-slate-100'}
+								${toDo.priority === 'lowest' ? 'bg-slate-300 hover:bg-slate-400' : 'bg-slate-100'}`}
 							>
-								<ToDoItem {...toDo} />
+								<ToDoItem
+									{...toDo}
+									todo={toDo}
+									editingId={editingId}
+									todoId={toDo.id}
+									handleSaveEditedTodo={handleSaveEditedTodo}
+								/>
 								<div className='flex gap-2 items-center justify-center mr-1'>
 									<BtnDone todoDone={todoDone} todoId={toDo.id} />
 									<BtnDel deleteToDo={deleteToDo} todoId={toDo.id} />
@@ -118,6 +174,8 @@ function App() {
 											<MenuTodo
 												prioritizeTodo={prioritizeTodo}
 												todoId={toDo.id}
+												editTodo={editTodo}
+												handleSaveEditedTodo={handleSaveEditedTodo}
 											/>
 										)}
 									</div>
@@ -128,9 +186,8 @@ function App() {
 				) : (
 					<p>nothing to do</p>
 				)}
-				<ToDoItem doneTodos={doneTodos} />
 			</div>
-			<div className=''></div>
+			<div></div>
 			<div className='w-1/2'>
 				{doneTodos.length > 0 ? (
 					doneTodos.map(todo => {
