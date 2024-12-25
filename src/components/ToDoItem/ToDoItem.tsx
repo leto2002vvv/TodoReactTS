@@ -4,15 +4,24 @@ import EditTodo from '../EditTodo/EditTodo'
 
 const ToDoItem: React.FC<TodoProps> = ({
 	todo,
-	handleSaveEditedTodo,
 	editingId,
+	editedTodoValue,
+	handleSetText,
 }) => {
 	return (
-		<ul className='relative'>
-			{editingId ? (
-				<EditTodo handleSaveEditedTodo={handleSaveEditedTodo} />
+		<ul className='relative flex gap-12 items-center'>
+			{todo.id === editingId ? (
+				<EditTodo
+					handleSetText={handleSetText}
+					editedTodoValue={editedTodoValue}
+				/>
 			) : (
-				<ol>{todo.text}</ol>
+				<>
+					<ol>{todo.text}</ol>
+					<ol className='text-sm'>
+						{`deadline: ${todo.deadline ? todo.deadline.toLocaleString() : null}`}
+					</ol>
+				</>
 			)}
 		</ul>
 	)

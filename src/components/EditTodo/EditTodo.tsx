@@ -1,22 +1,19 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { TodoProps } from '../../types/types'
 
-const EditTodo: React.FC<TodoProps> = ({ todo, handleSaveEditedTodo }) => {
-	const [text, setText] = useState<string>('')
-
-	const handleSetText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-		setText(e.target.value)
-	}
-	console.log(text)
-
+const EditTodo: React.FC<TodoProps> = ({
+	todo,
+	handleSetText,
+	editedTodoValue,
+}) => {
 	return (
 		<>
 			<textarea
-				value={text}
+				value={editedTodoValue}
 				onChange={handleSetText}
-				className='h-7 absolute rounded-full bottom-[2px] outline-none bg-transparent'
+				className='h-7 absolute -bottom-3 outline-none bg-transparent'
 			>
-				{todo.text}
+				{todo && todo.text}
 			</textarea>
 		</>
 	)

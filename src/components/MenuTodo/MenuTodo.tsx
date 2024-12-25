@@ -1,13 +1,15 @@
 import React from 'react'
 import { MenuTodoProps, Priority } from '../../types/types'
 import { FaEdit } from 'react-icons/fa'
-import { MdPriorityHigh, MdLowPriority } from 'react-icons/md'
+import { MdPriorityHigh, MdLowPriority, MdTimer } from 'react-icons/md'
 
 const MenuTodo: React.FC<MenuTodoProps> = ({
 	prioritizeTodo,
-	todoId,
+	openDeadlineModal,
 	editTodo,
 	handleSaveEditedTodo,
+	todoId,
+	editingId,
 }) => {
 	return (
 		<div className='absolute -top-6 -right-52 w-48 bg-slate-100 p-1 rounded-xl flex flex-col items-start gap-1 pl-3'>
@@ -41,13 +43,22 @@ const MenuTodo: React.FC<MenuTodoProps> = ({
 					<FaEdit className='w-3' />
 					<p>edit todo</p>
 				</button>
-				<button
-					className='flex gap-1 items-center border-b hover:translate-x-1 hover:border-b-slate-300 transition-all duration-200'
-					onClick={handleSaveEditedTodo}
-				>
-					save
-				</button>
+				{editingId && (
+					<button
+						className='flex gap-1 items-center border-b hover:translate-x-1 hover:border-b-slate-300 transition-all duration-200'
+						onClick={handleSaveEditedTodo}
+					>
+						save
+					</button>
+				)}
 			</div>
+			<button
+				className='flex gap-1 items-center border-b hover:translate-x-1 hover:border-b-slate-300 transition-all duration-200'
+				onClick={() => openDeadlineModal(todoId)}
+			>
+				<MdTimer className='w-3' />
+				add deadline
+			</button>
 		</div>
 	)
 }

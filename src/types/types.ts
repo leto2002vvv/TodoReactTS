@@ -6,12 +6,15 @@ export interface ToDo {
 	createdAt: string
 	updatedAt: string
 	priority?: string
+	deadline: Date | null
 }
 
 export interface TodoProps extends ToDo {
-	handleSaveEditedTodo?: (editedTodo: string) => void
-	todoId?: number
-	editingId?: number | null
+	handleSaveEditedTodo: (editedTodo: string) => void
+	handleSetText: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+	editedTodoValue: string
+	todoId: number
+	editingId: number | null
 	todo: ToDo
 }
 
@@ -22,10 +25,10 @@ export interface BtnAddProps {
 }
 
 export interface InputProps {
-	value: string
-	className: string
 	setInputValue: (value: string) => void
 	handleEnterPress: (e: React.KeyboardEvent) => void
+	value: string
+	className: string
 }
 
 export interface BtnDelProps {
@@ -42,7 +45,17 @@ export type Priority = 'highest' | 'lowest' | 'middle'
 
 export interface MenuTodoProps {
 	prioritizeTodo: (todoId: number, value: Priority) => void
-	todoId: number
 	editTodo: (todoId: number) => void
 	handleSaveEditedTodo: (e: React.MouseEvent<HTMLButtonElement>) => void
+	openDeadlineModal: (id: number) => void
+	todoId: number
+	editingId: number | null
+}
+
+export interface DeadlineModalProps {
+	setIsDeadlineModalOpen: React.Dispatch<React.SetStateAction<boolean>>
+	setDeadline: React.Dispatch<React.SetStateAction<Date | null>>
+	deadline: Date | null
+	editingId: number | null
+	handleSetTodoDeadline: () => void
 }

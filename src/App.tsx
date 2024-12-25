@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react'
-import { MdMoreHoriz } from 'react-icons/md'
-
-import './App.css'
 import { ToDo, Priority } from './types/types'
 
 import ToDoItem from './components/ToDoItem/ToDoItem'
@@ -11,11 +8,15 @@ import BtnDel from './components/BtnDel/BtnDel'
 import BtnDone from './components/BtnDone/BtnDone'
 import DoneTodos from './components/DoneTodos/DoneTodos'
 import MenuTodo from './components/MenuTodo/MenuTodo'
-import useDebounce from './hooks/UseDebounce'
+import DeadlineModal from './components/DeadlineModal/DeadlineModal'
+
+import { MdMoreHoriz } from 'react-icons/md'
+import { FaPlus } from 'react-icons/fa'
+import './App.css'
+import DropdownMenu from './components/DropdownMenu/DropdownMenu'
 
 function App() {
 	// ========================================= STATES
-
 	const [inputValue, setInputValue] = useState<string>('')
 	const [todos, setTodos] = useState<ToDo[]>(() => {
 		const savedTodos = localStorage.getItem('todos')
@@ -25,14 +26,17 @@ function App() {
 		const savedDoneTodos = localStorage.getItem('doneTodos')
 		return savedDoneTodos ? JSON.parse(savedDoneTodos) : []
 	})
-
 	const [openedMenuId, setOpenedMenuId] = useState<number | null>(null)
-	const [editingId, setEditingId] = useState<number | null>(null) // по идее эти два стейта можно обьеденить в один
+	const [editingId, setEditingId] = useState<number | null>(null) // по идее эти два стейта можно обьеденить в один, сюда на первое время привязать к какому именно todo задавать deadline
+	const [deadlineId, setDeadlineId] = useState<number>()
 
-	// const debouncedSaveEditedTodo = useDebounce(, 500)
+	const [editedTodoValue, setEditedTodoValue] = useState<string>('')
+	const [isDeadlineModalOpen, setIsDeadlineModalOpen] = useState<boolean>(false)
+	const [deadline, setDeadline] = useState<Date | null>(null)
+
+	const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false)
 
 	// ========================================= FUNCTIONS
-
 	const handleAddToDo = () => {
 		if (inputValue.trim() !== '') {
 			const nextId =
@@ -45,6 +49,7 @@ function App() {
 				createdAt: new Date().toISOString(),
 				updatedAt: new Date().toISOString(),
 				priority: 'middle',
+				deadline: null,
 			}
 			setTodos(prev => {
 				const highPrioritized = prev.filter(todo => todo.priority === 'highest')
@@ -105,13 +110,66 @@ function App() {
 		return value
 	}
 
+	// ======================================== editing logic
 	const editTodo = (id: number) => {
 		setEditingId(id) // here is the id of clicked to edit todo from MenuTodo
 	}
 
+	const handleSetText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setEditedTodoValue(e.target.value)
+	}
+
 	const handleSaveEditedTodo = () => {
-		if (editingId) {
+		if (editedTodoValue.trim())
+			setTodos(prev =>
+				prev.map(todo =>
+					todo.id === editingId ? { ...todo, text: editedTodoValue } : todo
+				)
+			)
+		setEditingId(null)
+		setEditedTodoValue('')
+	}
+
+	// ============================================= deadline logic
+
+	const openDeadlineModal = (id: number) => {
+		setIsDeadlineModalOpen(true)
+		setDeadlineId(id)
+	}
+
+	const handleSetTodoDeadline = () => {
+		setTodos(prev =>
+			prev.map(todo => {
+				if (todo.id === deadlineId) {
+					return {
+						...todo,
+						deadline: deadline,
+					}
+				}
+				return todo
+			})
+		)
+		setDeadline(null)
+		setIsDeadlineModalOpen(false)
+	}
+
+	const handleNotification = (todo: ToDo) => {
+		if ('Notification' in window) {
+			Notification.requestPermission().then(permission => {
+				if (permission === 'granted') {
+					new Notification(`havent u forgot about this aim '${todo.text}' ?`)
+				}
+			})
 		}
+	}
+
+	const checkDeadlines = () => {
+		const now = new Date()
+		todos.forEach(todo => {
+			if (todo.deadline && todo.deadline <= now) {
+				handleNotification(todo)
+			}
+		})
 	}
 
 	// ============================================= EFFECTS
@@ -121,29 +179,50 @@ function App() {
 		localStorage.setItem('doneTodos', JSON.stringify(doneTodos))
 		setOpenedMenuId(null)
 		setEditingId(null)
+
+		const interval = setInterval(checkDeadlines, 1000)
+		return () => clearInterval(interval)
 	}, [todos, doneTodos])
 
 	// ============================================ LOGS
 
-	console.log(todos)
 	console.log(editingId)
-	console.log(openedMenuId);
-	
+	console.log(todos)
+	console.log(isDropdownOpen)
 
 	return (
-		<div className='m-10 flex flex-col justify-center items-center'>
-			<div className='flex justify-between flex-wrap w-1/2 gap-4 mb-5'>
+		<div className='m-10 flex flex-col justify-center items-center relative'>
+			{isDeadlineModalOpen && (
+				<DeadlineModal
+					setIsDeadlineModalOpen={setIsDeadlineModalOpen}
+					setDeadline={setDeadline}
+					handleSetTodoDeadline={handleSetTodoDeadline}
+					deadline={deadline}
+					editingId={editingId}
+				/>
+			)}
+			<div className='flex justify-between items-center flex-wrap w-1/2 gap-4 mb-5'>
 				<InputToDo
 					className='bg-slate-100 hover:bg-slate-200 transition-all duration-200 rounded-md p-1 outline-none border border-gray-300'
 					value={inputValue}
 					setInputValue={setInputValue}
 					handleEnterPress={handleEnterPress}
 				/>
-				<Btn
-					className='border bg-slate-100 hover:bg-slate-200 transition-all duration-200 border-gray-300 rounded-md p-1'
-					text={'add new todo'}
-					addToDo={handleAddToDo}
-				/>
+				<div className='flex items-center gap-4'>
+					<Btn
+						className='border bg-slate-100 hover:bg-slate-200 transition-all duration-200 border-gray-300 rounded-md p-1'
+						text={'add new todo'}
+						addToDo={handleAddToDo}
+					/>
+					<div
+						className='relative'
+						onMouseEnter={() => setIsDropdownOpen(true)}
+						onMouseLeave={() => setIsDropdownOpen(false)}
+					>
+						<FaPlus className='hover:rotate-45 transition-all ease-out duration-500 cursor-pointer' />
+						{isDropdownOpen && <DropdownMenu />}
+					</div>
+				</div>
 			</div>
 			<div className='w-1/2'>
 				{todos.length > 0 ? (
@@ -160,7 +239,8 @@ function App() {
 									todo={toDo}
 									editingId={editingId}
 									todoId={toDo.id}
-									handleSaveEditedTodo={handleSaveEditedTodo}
+									editedTodoValue={editedTodoValue}
+									handleSetText={handleSetText}
 								/>
 								<div className='flex gap-2 items-center justify-center mr-1'>
 									<BtnDone todoDone={todoDone} todoId={toDo.id} />
@@ -176,6 +256,8 @@ function App() {
 												todoId={toDo.id}
 												editTodo={editTodo}
 												handleSaveEditedTodo={handleSaveEditedTodo}
+												editingId={editingId}
+												openDeadlineModal={openDeadlineModal}
 											/>
 										)}
 									</div>
@@ -187,7 +269,6 @@ function App() {
 					<p>nothing to do</p>
 				)}
 			</div>
-			<div></div>
 			<div className='w-1/2'>
 				{doneTodos.length > 0 ? (
 					doneTodos.map(todo => {
