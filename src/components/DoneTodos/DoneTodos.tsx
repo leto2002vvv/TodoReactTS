@@ -1,7 +1,7 @@
 import React from 'react'
 import { ToDo } from '../../types/types'
 
-const DoneTodos: React.FC<ToDo> = ({ text, createdAt, updatedAt, number }) => {
+const DoneTodos: React.FC<ToDo> = ({ text, number }) => {
 	return (
 		<ul>
 			<ol>

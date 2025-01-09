@@ -1,13 +1,19 @@
 import React, { useState } from 'react'
 import { MdHelpOutline } from 'react-icons/md'
+import { DropdownMenuProps } from '../../types/types'
 
-const DropdownMenu = () => {
+const DropdownMenu: React.FC<DropdownMenuProps> = ({
+	setIsAddSectionMenuOpen,
+}) => {
 	const [isHelpHovered, setIsHelperHovered] = useState<boolean>(false)
 
 	return (
 		<div className='absolute -bottom-3 -right-48 w-48 bg-slate-100 p-1 rounded-xl flex flex-col items-start gap-1 pl-3'>
 			<div className='flex w-full justify-between items-center relative'>
-				<button className='flex gap-1 items-center border-b hover:translate-x-1 hover:border-b-slate-300 transition-all duration-200'>
+				<button
+					className='flex gap-1 items-center border-b hover:translate-x-1 hover:border-b-slate-300 transition-all duration-200'
+					onClick={() => setIsAddSectionMenuOpen(true)}
+				>
 					add section
 				</button>
 				<div className='absolute'></div>

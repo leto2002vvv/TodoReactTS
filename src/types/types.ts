@@ -9,26 +9,25 @@ export interface ToDo {
 	deadline: Date | null
 }
 
-export interface TodoProps extends ToDo {
-	handleSaveEditedTodo: (editedTodo: string) => void
+export interface TodoProps {
 	handleSetText: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 	editedTodoValue: string
-	todoId: number
-	editingId: number | null
+	todoId?: number
+	editingId?: number | null
 	todo: ToDo
 }
 
-export interface BtnAddProps {
-	addToDo: () => void
+export interface BtnProps {
+	addFunc: () => void
 	text: string
-	className: string
+	classNameBtn: string
 }
 
 export interface InputProps {
-	setInputValue: (value: string) => void
-	handleEnterPress: (e: React.KeyboardEvent) => void
+	setter: (value: string) => void
+	onEnter: (e: React.KeyboardEvent) => void
 	value: string
-	className: string
+	classNameInput: string
 }
 
 export interface BtnDelProps {
@@ -48,14 +47,44 @@ export interface MenuTodoProps {
 	editTodo: (todoId: number) => void
 	handleSaveEditedTodo: (e: React.MouseEvent<HTMLButtonElement>) => void
 	openDeadlineModal: (id: number) => void
+	setChooseSectionOpen: React.Dispatch<React.SetStateAction<boolean>>
 	todoId: number
 	editingId: number | null
+	sections: Section[]
 }
 
 export interface DeadlineModalProps {
 	setIsDeadlineModalOpen: React.Dispatch<React.SetStateAction<boolean>>
 	setDeadline: React.Dispatch<React.SetStateAction<Date | null>>
+	handleSetTodoDeadline: () => void
 	deadline: Date | null
 	editingId: number | null
-	handleSetTodoDeadline: () => void
+}
+
+export interface DropdownMenuProps {
+	setIsAddSectionMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export interface Section {
+	sectionName: string
+	sectionId: number
+	todos: ToDo[]
+}
+
+export interface SectionModalProps {
+	setIsAddSectionMenuOpen: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export interface DropableColProps {
+	section: Section
+}
+
+export interface ChooseSectionModalProps {
+	setChooseSectionOpen: React.Dispatch<React.SetStateAction<boolean>>
+	putTodoIntoSection: (sectionId: number) => void
+	sections: Section[]
+}
+
+export interface DraggableTodoProps {
+	todo: ToDo
 }

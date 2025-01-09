@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react'
-import { ToDo, Priority } from './types/types'
+import { ToDo, Priority, Section } from './types/types'
 
 import ToDoItem from './components/ToDoItem/ToDoItem'
-import InputToDo from './components/InputToDo/InputToDo'
+import Input from './components/Input/Input'
 import Btn from './components/Btn/Btn'
 import BtnDel from './components/BtnDel/BtnDel'
 import BtnDone from './components/BtnDone/BtnDone'
 import DoneTodos from './components/DoneTodos/DoneTodos'
 import MenuTodo from './components/MenuTodo/MenuTodo'
 import DeadlineModal from './components/DeadlineModal/DeadlineModal'
+import DropdownMenu from './components/DropdownMenu/DropdownMenu'
+
+// DragEndEvent
+import { closestCorners, DndContext } from '@dnd-kit/core'
+import DropableCol from './components/DropableCol/DropableCol'
+import AddSectionModal from './components/AddSectionModal/AddSectionModal'
 
 import { MdMoreHoriz } from 'react-icons/md'
 import { FaPlus } from 'react-icons/fa'
 import './App.css'
-import DropdownMenu from './components/DropdownMenu/DropdownMenu'
+import ChooseSectionModal from './components/ChooseSectionModal/ChooseSectionModal'
 
 function App() {
 	// ========================================= STATES
@@ -35,6 +41,14 @@ function App() {
 	const [deadline, setDeadline] = useState<Date | null>(null)
 
 	const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false)
+
+	const [sections, setSections] = useState<Section[]>(() => {
+		const savedSections = localStorage.getItem('sections')
+		return savedSections ? JSON.parse(savedSections) : []
+	})
+	const [isAddSectionMenuOpen, setIsAddSectionMenuOpen] =
+		useState<boolean>(false)
+	const [сhooseSectionOpen, setChooseSectionOpen] = useState<boolean>(false)
 
 	// ========================================= FUNCTIONS
 	const handleAddToDo = () => {
@@ -172,23 +186,103 @@ function App() {
 		})
 	}
 
+	// ============================================= SECTION LOGIC
+
+	const createNewSection = () => {
+		if (inputValue.trim() === '') return
+		const nextSectionId =
+			sections.length > 0
+				? Math.max(...sections.map(sec => sec.sectionId)) + 1
+				: 1
+		setSections(prev => [
+			...prev,
+			{ sectionName: inputValue, sectionId: nextSectionId, todos: [] },
+		])
+		setInputValue('')
+	}
+
+	const putTodoIntoSection = (sectionId: number) => {
+		const addedTodo = todos.filter(todo => todo.id === openedMenuId)[0]
+		setSections(prevSections => {
+			return prevSections.map(section => {
+				if (section.sectionId === sectionId) {
+					const updatedSection = section.todos.some(
+						todo => todo.id === addedTodo.id
+					)
+						? section.todos
+						: [...section.todos, addedTodo]
+					return {
+						...section,
+						todos: updatedSection,
+					}
+				}
+				return section
+			})
+		})
+	}
+
+	// const handleDragEnd = (event: DragEndEvent) => {
+	// 	const { active, over } = event
+
+	// 	if (!over || active.id === over.id) return
+
+	// 	const activeSection = sections.find(section =>
+	// 		section.todos.some(todo => todo.id === active.id)
+	// 	) // to find the draggable section
+	// 	const overSection = sections.find(section =>
+	// 		section.todos.some(todo => todo.id === over.id)
+	// 	) // to find the section over which we are dragging the active section
+	// 	console.log(activeSection, overSection)
+
+	// 	if (activeSection && overSection) {
+	// 		const activeTodoIndex = activeSection.todos.findIndex(
+	// 			todo => todo.id === active.id
+	// 		)
+	// 		const overTodoIndex = overSection.todos.findIndex(
+	// 			todo => todo.id === over.id
+	// 		)
+	// 		console.log(activeTodoIndex, overTodoIndex)
+
+	// 		if (
+	// 			activeSection &&
+	// 			overSection &&
+	// 			activeSection.sectionId === overSection.sectionId
+	// 		) {
+	// 			const updatedTodos = [...activeSection.todos]
+	// 			const [movedTodo] = updatedTodos.splice(activeTodoIndex, 1)
+	// 			updatedTodos.splice(overTodoIndex, 0, movedTodo)
+	// 		}
+	// 	}
+	// }
+
 	// ============================================= EFFECTS
 
 	useEffect(() => {
 		localStorage.setItem('todos', JSON.stringify(todos))
 		localStorage.setItem('doneTodos', JSON.stringify(doneTodos))
+		localStorage.setItem('sections', JSON.stringify(sections))
 		setOpenedMenuId(null)
 		setEditingId(null)
 
 		const interval = setInterval(checkDeadlines, 1000)
 		return () => clearInterval(interval)
-	}, [todos, doneTodos])
+	}, [todos, doneTodos, sections])
 
 	// ============================================ LOGS
-
-	console.log(editingId)
 	console.log(todos)
-	console.log(isDropdownOpen)
+	console.log(sections)
+
+	// const getSomeData = (str: string, num: number) => {
+	// 	const slicedStr = str.split(',').reduce((acc, val, idx) => {
+	// 		if (idx % 2 !== 0) {
+	// 			acc.push(val.slice(1))
+	// 		}
+	// 		return acc
+	// 	}, [])
+	// 	console.log(slicedStr)
+	// }
+
+	// getSomeData('apple, green, vegetable, soap', 13)
 
 	return (
 		<div className='m-10 flex flex-col justify-center items-center relative'>
@@ -201,18 +295,40 @@ function App() {
 					editingId={editingId}
 				/>
 			)}
-			<div className='flex justify-between items-center flex-wrap w-1/2 gap-4 mb-5'>
-				<InputToDo
-					className='bg-slate-100 hover:bg-slate-200 transition-all duration-200 rounded-md p-1 outline-none border border-gray-300'
+			{isAddSectionMenuOpen && (
+				<AddSectionModal
+					// input props
+					classNameInput='bg-slate-100 hover:bg-slate-200 transition-all duration-200 rounded-md px-1 outline-none border border-gray-300'
+					setter={setInputValue}
+					onEnter={handleEnterPress}
 					value={inputValue}
-					setInputValue={setInputValue}
-					handleEnterPress={handleEnterPress}
+					// btn props
+					addFunc={createNewSection}
+					text='create new section'
+					classNameBtn='border bg-slate-100 hover:bg-slate-200 transition-all duration-200 border-gray-300 rounded-md px-1'
+					// modalProps
+					setIsAddSectionMenuOpen={setIsAddSectionMenuOpen}
+				/>
+			)}
+			{сhooseSectionOpen && (
+				<ChooseSectionModal
+					sections={sections}
+					setChooseSectionOpen={setChooseSectionOpen}
+					putTodoIntoSection={putTodoIntoSection}
+				/>
+			)}
+			<div className='flex justify-between items-center flex-wrap w-1/2 gap-4 mb-5'>
+				<Input
+					classNameInput='bg-slate-100 hover:bg-slate-200 transition-all duration-200 rounded-md p-1 outline-none border border-gray-300'
+					value={inputValue}
+					setter={setInputValue}
+					onEnter={handleEnterPress}
 				/>
 				<div className='flex items-center gap-4'>
 					<Btn
-						className='border bg-slate-100 hover:bg-slate-200 transition-all duration-200 border-gray-300 rounded-md p-1'
+						classNameBtn='border bg-slate-100 hover:bg-slate-200 transition-all duration-200 border-gray-300 rounded-md p-1'
 						text={'add new todo'}
-						addToDo={handleAddToDo}
+						addFunc={handleAddToDo}
 					/>
 					<div
 						className='relative'
@@ -220,7 +336,9 @@ function App() {
 						onMouseLeave={() => setIsDropdownOpen(false)}
 					>
 						<FaPlus className='hover:rotate-45 transition-all ease-out duration-500 cursor-pointer' />
-						{isDropdownOpen && <DropdownMenu />}
+						{isDropdownOpen && (
+							<DropdownMenu setIsAddSectionMenuOpen={setIsAddSectionMenuOpen} />
+						)}
 					</div>
 				</div>
 			</div>
@@ -258,6 +376,8 @@ function App() {
 												handleSaveEditedTodo={handleSaveEditedTodo}
 												editingId={editingId}
 												openDeadlineModal={openDeadlineModal}
+												sections={sections}
+												setChooseSectionOpen={setChooseSectionOpen}
 											/>
 										)}
 									</div>
@@ -288,6 +408,18 @@ function App() {
 					<p>no done todos</p>
 				)}
 			</div>
+			{sections.length > 0 && (
+				<DndContext
+					collisionDetection={closestCorners}
+					// onDragEnd={handleDragEnd}
+				>
+					<div className='grid grid-flow-col grid-cols-3 gap-2 w-1/2 text-center'>
+						{sections.map(section => {
+							return <DropableCol key={section.sectionId} section={section} />
+						})}
+					</div>
+				</DndContext>
+			)}
 		</div>
 	)
 }

@@ -1,15 +1,17 @@
 import React from 'react'
 import { MenuTodoProps, Priority } from '../../types/types'
 import { FaEdit } from 'react-icons/fa'
-import { MdPriorityHigh, MdLowPriority, MdTimer } from 'react-icons/md'
+import { MdPriorityHigh, MdLowPriority, MdTimer, MdAdd } from 'react-icons/md'
 
 const MenuTodo: React.FC<MenuTodoProps> = ({
 	prioritizeTodo,
 	openDeadlineModal,
 	editTodo,
 	handleSaveEditedTodo,
+	setChooseSectionOpen,
 	todoId,
 	editingId,
+	sections,
 }) => {
 	return (
 		<div className='absolute -top-6 -right-52 w-48 bg-slate-100 p-1 rounded-xl flex flex-col items-start gap-1 pl-3'>
@@ -41,7 +43,7 @@ const MenuTodo: React.FC<MenuTodoProps> = ({
 					onClick={() => editTodo(todoId)}
 				>
 					<FaEdit className='w-3' />
-					<p>edit todo</p>
+					edit todo
 				</button>
 				{editingId && (
 					<button
@@ -59,6 +61,15 @@ const MenuTodo: React.FC<MenuTodoProps> = ({
 				<MdTimer className='w-3' />
 				add deadline
 			</button>
+			{sections.length > 0 && (
+				<button
+					className='flex gap-1 items-center border-b hover:translate-x-1 hover:border-b-slate-300 transition-all duration-200'
+					onClick={() => setChooseSectionOpen(true)}
+				>
+					<MdAdd className='w-5' />
+					put into section ...
+				</button>
+			)}
 		</div>
 	)
 }

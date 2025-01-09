@@ -3,10 +3,10 @@ import { TodoProps } from '../../types/types'
 import EditTodo from '../EditTodo/EditTodo'
 
 const ToDoItem: React.FC<TodoProps> = ({
+	handleSetText,
 	todo,
 	editingId,
 	editedTodoValue,
-	handleSetText,
 }) => {
 	return (
 		<ul className='relative flex gap-12 items-center'>
@@ -14,6 +14,7 @@ const ToDoItem: React.FC<TodoProps> = ({
 				<EditTodo
 					handleSetText={handleSetText}
 					editedTodoValue={editedTodoValue}
+					todo={todo}
 				/>
 			) : (
 				<>

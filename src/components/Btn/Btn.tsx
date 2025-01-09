@@ -1,10 +1,10 @@
 import React from 'react'
-import { BtnAddProps } from '../../types/types'
+import { BtnProps } from '../../types/types'
 
-const Btn: React.FC<BtnAddProps> = ({ addToDo, text, className }) => {
+const Btn: React.FC<BtnProps> = ({ addFunc, text, classNameBtn }) => {
 	return (
 		<div>
-			<button onClick={addToDo} className={className}>
+			<button onClick={addFunc} className={classNameBtn}>
 				{text}
 			</button>
 		</div>
