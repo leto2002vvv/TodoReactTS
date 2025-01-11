@@ -1,54 +1,24 @@
-<<<<<<< HEAD
-# React + TypeScript + Vite
+# Todo List
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Beschreibung:
 
-Currently, two official plugins are available:
+    Dies ist eine Anwendung zum Hinzufügen, Anzeigen und Priorisieren einer To-Do-Liste. Sie ermöglicht das Hinzufügen von Deadlines, das Bearbeiten von Todos und das Organisieren von Aufgaben in separate thematische Abschnitte.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Description:
 
-## Expanding the ESLint configuration
+    This is an application for adding, displaying, and prioritizing a to-do list. It allows adding deadlines, editing todos, and organizing them into separate thematic sections.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Technologien / The technologies :
 
-- Configure the top-level `parserOptions` property like this:
+    Typescript,
+    React,
+    Vite,
+    Tailwind CSS
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+##### Deployed Project :
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+    coming soon
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+###### Installation:
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
-=======
-# TodoReactTS
->>>>>>> 3fe97e94f51bd14e473ce3205688b45039201e07
+    git clone https://github.com/leto2002vvv/GamesApiReact.git

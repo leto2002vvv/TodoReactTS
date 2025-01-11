@@ -76,6 +76,8 @@ export interface SectionModalProps {
 }
 
 export interface DropableColProps {
+	handleSectionSettingsOpen: (sectionId: number) => void
+	sectionSettingsId: number | null
 	section: Section
 }
 
@@ -87,4 +89,18 @@ export interface ChooseSectionModalProps {
 
 export interface DraggableTodoProps {
 	todo: ToDo
+}
+
+export interface HelperText {
+	title: string
+	text: string
+}
+
+export interface HelperModalProps {
+	helperText: HelperText
+}
+
+export interface ColorPaletteProps {
+	setSelectedColor: React.Dispatch<React.SetStateAction<string>>
+	color: string
 }

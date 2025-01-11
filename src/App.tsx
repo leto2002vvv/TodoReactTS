@@ -11,8 +11,7 @@ import MenuTodo from './components/MenuTodo/MenuTodo'
 import DeadlineModal from './components/DeadlineModal/DeadlineModal'
 import DropdownMenu from './components/DropdownMenu/DropdownMenu'
 
-// DragEndEvent
-import { closestCorners, DndContext } from '@dnd-kit/core'
+import { closestCorners, DndContext, DragEndEvent } from '@dnd-kit/core'
 import DropableCol from './components/DropableCol/DropableCol'
 import AddSectionModal from './components/AddSectionModal/AddSectionModal'
 
@@ -49,6 +48,9 @@ function App() {
 	const [isAddSectionMenuOpen, setIsAddSectionMenuOpen] =
 		useState<boolean>(false)
 	const [сhooseSectionOpen, setChooseSectionOpen] = useState<boolean>(false)
+	const [sectionSettingsId, setSectionSettingsId] = useState<number | null>(
+		null
+	)
 
 	// ========================================= FUNCTIONS
 	const handleAddToDo = () => {
@@ -221,39 +223,44 @@ function App() {
 		})
 	}
 
-	// const handleDragEnd = (event: DragEndEvent) => {
-	// 	const { active, over } = event
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event
 
-	// 	if (!over || active.id === over.id) return
+		if (!over || active.id === over.id) return
 
-	// 	const activeSection = sections.find(section =>
-	// 		section.todos.some(todo => todo.id === active.id)
-	// 	) // to find the draggable section
-	// 	const overSection = sections.find(section =>
-	// 		section.todos.some(todo => todo.id === over.id)
-	// 	) // to find the section over which we are dragging the active section
-	// 	console.log(activeSection, overSection)
+		const activeSection = sections.find(section =>
+			section.todos.some(todo => todo.id === active.id)
+		) // to find the draggable section
+		const overSection = sections.find(section =>
+			section.todos.some(todo => todo.id === over.id)
+		) // to find the section over which we are dragging the active section
+		console.log(activeSection, overSection)
+		console.log(active.id, over.id)
 
-	// 	if (activeSection && overSection) {
-	// 		const activeTodoIndex = activeSection.todos.findIndex(
-	// 			todo => todo.id === active.id
-	// 		)
-	// 		const overTodoIndex = overSection.todos.findIndex(
-	// 			todo => todo.id === over.id
-	// 		)
-	// 		console.log(activeTodoIndex, overTodoIndex)
+		if (activeSection && overSection) {
+			const activeTodoIndex = activeSection.todos.findIndex(
+				todo => todo.id === active.id
+			)
+			const overTodoIndex = overSection.todos.findIndex(
+				todo => todo.id === over.id
+			)
+			console.log(activeTodoIndex, overTodoIndex)
 
-	// 		if (
-	// 			activeSection &&
-	// 			overSection &&
-	// 			activeSection.sectionId === overSection.sectionId
-	// 		) {
-	// 			const updatedTodos = [...activeSection.todos]
-	// 			const [movedTodo] = updatedTodos.splice(activeTodoIndex, 1)
-	// 			updatedTodos.splice(overTodoIndex, 0, movedTodo)
-	// 		}
-	// 	}
-	// }
+			if (
+				activeSection &&
+				overSection &&
+				activeSection.sectionId === overSection.sectionId
+			) {
+				const updatedTodos = [...activeSection.todos]
+				const [movedTodo] = updatedTodos.splice(activeTodoIndex, 1)
+				updatedTodos.splice(overTodoIndex, 0, movedTodo)
+			}
+		}
+	}
+
+	const handleSectionSettingsOpen = (sectionId: number) => {
+		setSectionSettingsId(sectionId)
+	}
 
 	// ============================================= EFFECTS
 
@@ -269,8 +276,6 @@ function App() {
 	}, [todos, doneTodos, sections])
 
 	// ============================================ LOGS
-	console.log(todos)
-	console.log(sections)
 
 	// const getSomeData = (str: string, num: number) => {
 	// 	const slicedStr = str.split(',').reduce((acc, val, idx) => {
@@ -411,11 +416,18 @@ function App() {
 			{sections.length > 0 && (
 				<DndContext
 					collisionDetection={closestCorners}
-					// onDragEnd={handleDragEnd}
+					onDragEnd={handleDragEnd}
 				>
 					<div className='grid grid-flow-col grid-cols-3 gap-2 w-1/2 text-center'>
 						{sections.map(section => {
-							return <DropableCol key={section.sectionId} section={section} />
+							return (
+								<DropableCol
+									key={section.sectionId}
+									section={section}
+									handleSectionSettingsOpen={handleSectionSettingsOpen}
+									sectionSettingsId={sectionSettingsId}
+								/>
+							)
 						})}
 					</div>
 				</DndContext>
